@@ -5,19 +5,21 @@ namespace WeatherWebApplication.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    public class WeatherForecastController : ControllerBase, IDisposable
     {
+        private IMeteoComputer meteoComputer;
+        public WeatherForecastController(IMeteoComputer meteoComputer,
+            ILogger<WeatherForecastController> logger)
+        {
+            this.meteoComputer = meteoComputer;
+            _logger = logger;
+        }
         private static readonly string[] Summaries = new[]
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
-
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
-        {
-            _logger = logger;
-        }
 
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
@@ -46,19 +48,21 @@ namespace WeatherWebApplication.Controllers
         //public IActionResult Retrieve([FromQuery]WeatherForecast weatherForecast)
         public IActionResult Post([FromBody] WeatherForecast weatherForecast)
         {
-            //return Enumerable.Range(1, forecastDays).Select(index => new WeatherForecast
-            //{
-            //    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            //    TemperatureC = Random.Shared.Next(-20, 55),
-            //    Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            //})
-            //.ToArray();
-
-
+            // Business validation
+            if (!meteoComputer.Validate())
+            {
+                // 400
+                //return BadRequest();
+                this.ModelState.AddModelError("field1", "Super error msg");
+                this.ModelState.AddModelError("field1", "Super error msg2");
+                this.ModelState.AddModelError("field2", "Great error msg");
+                return ValidationProblem(ModelState);
+            }
+            meteoComputer.Acquire();
             return Created();
-            //return Ok();
-            //return NoContent();
-            //return StatusCode(203,objetRetourné);
+        }
+        public void Dispose()
+        {
         }
     }
 }

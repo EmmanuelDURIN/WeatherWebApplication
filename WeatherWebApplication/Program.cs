@@ -1,4 +1,6 @@
 
+using WeatherWebApplication.Controllers;
+
 namespace WeatherWebApplication
 {
     public class Program
@@ -31,9 +33,12 @@ namespace WeatherWebApplication
             // Add services to the container.
 
             builder.Services.AddControllers();
+                //.AddJsonOptions( );
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddTransient<IMeteoComputer, MeteoComputer>();
+            builder.Services.AddTransient<IMeteoDataRecorder, MeteoDataRecorder>();
             return builder;
         }
     }
